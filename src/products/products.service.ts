@@ -67,9 +67,22 @@ export class ProductsService {
     return product;
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    console.log(updateProductDto);
-    return `This action updates a #${id} product`;
+  async update(id: string, updateProductDto: UpdateProductDto) {
+    const updatedProduct = await this.productsRepository.preload({
+      id,
+      ...updateProductDto,
+    });
+
+    if (!updatedProduct) {
+      throw new NotFoundException(`Product with id '${id}' not found`);
+    }
+
+    try {
+      await this.productsRepository.save(updatedProduct);
+      return updatedProduct;
+    } catch (error) {
+      this.handleDbExceptions(error);
+    }
   }
 
   async remove(id: string) {
@@ -87,6 +100,7 @@ export class ProductsService {
     ) {
       throw new BadRequestException(error.detail);
     }
+
     this.logger.error(error);
     throw new InternalServerErrorException(message || 'Unexpected error');
   }
