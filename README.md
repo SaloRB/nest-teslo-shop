@@ -4,8 +4,26 @@
 
 # Teslo API
 
-1. Levantar la base de datos
+1. Clonar proyecto
+
+2. Instalar dependencias
+
+```bash
+yarn install
+```
+
+3. Clonar archivo **.env.example** y renombrarlo a **.env**
+
+4. Configurar las variables de entorno
+
+5. Levantar la base de datos
 
 ```bash
 docker-compose up -d
+```
+
+6. Ejecutar servidor
+
+```bash
+yarn start:dev
 ```
