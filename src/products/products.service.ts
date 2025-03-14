@@ -8,6 +8,8 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { PaginationDto } from 'src/common/dto/pagination.dto';
+
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 
@@ -32,9 +34,14 @@ export class ProductsService {
     }
   }
 
-  // TODO: Implementar paginación
-  async findAll() {
-    return await this.productsRepository.find();
+  async findAll(paginationDto: PaginationDto) {
+    const { limit = 10, offset = 0 } = paginationDto;
+
+    return await this.productsRepository.find({
+      take: limit,
+      skip: offset,
+      // TODO: Implementar relaciones
+    });
   }
 
   async findOne(id: string) {
