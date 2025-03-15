@@ -14,7 +14,7 @@ import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 
-import { Product } from './entities/product.entity';
+import { Product, ProductImage } from './entities';
 
 @Injectable()
 export class ProductsService {
@@ -23,13 +23,25 @@ export class ProductsService {
   constructor(
     @InjectRepository(Product)
     private readonly productsRepository: Repository<Product>,
+
+    @InjectRepository(ProductImage)
+    private readonly productImagesRepository: Repository<ProductImage>,
   ) {}
 
   async create(createProductDto: CreateProductDto) {
     try {
-      const newProduct = this.productsRepository.create(createProductDto);
+      const { images = [], ...productDetails } = createProductDto;
+
+      const newProduct = this.productsRepository.create({
+        ...productDetails,
+        images: images.map((image) =>
+          this.productImagesRepository.create({ url: image }),
+        ),
+      });
+
       await this.productsRepository.save(newProduct);
-      return newProduct;
+
+      return { ...newProduct, images };
     } catch (error) {
       this.handleDbExceptions(error, 'Error creating product');
     }
@@ -71,6 +83,7 @@ export class ProductsService {
     const updatedProduct = await this.productsRepository.preload({
       id,
       ...updateProductDto,
+      images: [],
     });
 
     if (!updatedProduct) {
