@@ -22,7 +22,13 @@ yarn install
 docker-compose up -d
 ```
 
-6. Ejecutar servidor
+6. Ejecutar SEED
+
+```
+http://localhost:3000/api/seed
+```
+
+7. Ejecutar servidor
 
 ```bash
 yarn start:dev
