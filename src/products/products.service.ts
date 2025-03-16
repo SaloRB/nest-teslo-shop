@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { validate as isUuid } from 'uuid';
 
 import { PaginationDto } from 'src/common/dto/pagination.dto';
@@ -26,6 +26,8 @@ export class ProductsService {
 
     @InjectRepository(ProductImage)
     private readonly productImagesRepository: Repository<ProductImage>,
+
+    private readonly dataSource: DataSource,
   ) {}
 
   async create(createProductDto: CreateProductDto) {
@@ -88,20 +90,46 @@ export class ProductsService {
   }
 
   async update(id: string, updateProductDto: UpdateProductDto) {
+    const { images, ...productData } = updateProductDto;
+
     const updatedProduct = await this.productsRepository.preload({
       id,
-      ...updateProductDto,
-      images: [],
+      ...productData,
     });
 
     if (!updatedProduct) {
       throw new NotFoundException(`Product with id '${id}' not found`);
     }
 
+    // Create query runner
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
-      await this.productsRepository.save(updatedProduct);
-      return updatedProduct;
+      if (images) {
+        await queryRunner.manager.delete(ProductImage, {
+          product: {
+            id,
+          },
+        });
+
+        updatedProduct.images = images.map((img) =>
+          this.productImagesRepository.create({
+            url: img,
+          }),
+        );
+      }
+
+      await queryRunner.manager.save(updatedProduct);
+
+      await queryRunner.commitTransaction();
+      await queryRunner.release();
+
+      return this.findOnePlain(id);
     } catch (error) {
+      await queryRunner.rollbackTransaction();
+      await queryRunner.release();
       this.handleDbExceptions(error);
     }
   }
