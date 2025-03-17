@@ -1,13 +1,10 @@
-import * as multer from 'multer';
-
 export const fileFilter = (
   req: Express.Request,
   file: Express.Multer.File,
-  callback: multer.FileFilterCallback,
+  callback: (error: Error | null, acceptFile: boolean) => void,
 ) => {
   if (!file) {
-    callback(new Error('File is empty'));
-    return;
+    return callback(new Error('File is empty'), false);
   }
 
   const fileExtension = file.mimetype.split('/')[1];
