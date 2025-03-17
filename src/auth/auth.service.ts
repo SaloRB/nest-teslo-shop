@@ -5,6 +5,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
 
 import { CreateUserDto } from './dto/create-user.dto';
@@ -22,11 +23,17 @@ export class AuthService {
 
   async create(createUserDto: CreateUserDto) {
     try {
-      const user = this.userRepository.create(createUserDto);
+      const { password, ...userData } = createUserDto;
+
+      const user = this.userRepository.create({
+        ...userData,
+        password: bcrypt.hashSync(password, 10),
+      });
 
       await this.userRepository.save(user);
 
-      return user;
+      return { ...user, password: undefined };
+      // TODO: Retornar el JWT de acceso
     } catch (error) {
       this.handleDbExceptions(error, 'Error creating user');
     }
