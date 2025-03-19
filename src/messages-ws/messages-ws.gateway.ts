@@ -34,9 +34,24 @@ export class MessagesWsGateway
     );
   }
 
-  // message-from-client
   @SubscribeMessage('message-from-client')
-  handleMessageFromClient(client: Socket, payload: NewMessageDto) {
-    console.log(client.id, payload);
+  onMessageFromClient(client: Socket, payload: NewMessageDto) {
+    // ! Emite únicamente al cliente
+    // client.emit('message-from-server', {
+    //   fullName: 'Soy Yo',
+    //   message: payload.message || '',
+    // });
+
+    // ! Emitir a todos MENOS al cliente inicial
+    // client.broadcast.emit('message-from-server', {
+    //   fullName: 'Soy Yo',
+    //   message: payload.message || '',
+    // });
+
+    // ! Emitir a todos
+    this.wss.emit('message-from-server', {
+      fullName: 'Soy Yo',
+      message: payload.message || '',
+    });
   }
 }
