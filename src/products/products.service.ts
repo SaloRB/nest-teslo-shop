@@ -9,6 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { validate as isUuid } from 'uuid';
 
+import { User } from 'src/auth/entities/user.entity';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 import { CreateProductDto } from './dto/create-product.dto';
@@ -30,7 +31,8 @@ export class ProductsService {
     private readonly dataSource: DataSource,
   ) {}
 
-  async create(createProductDto: CreateProductDto) {
+  async create(createProductDto: CreateProductDto, user: User) {
+    console.log({ user });
     try {
       const { images = [], ...productDetails } = createProductDto;
 
@@ -39,6 +41,7 @@ export class ProductsService {
         images: images.map((image) =>
           this.productImagesRepository.create({ url: image }),
         ),
+        user,
       });
 
       await this.productsRepository.save(newProduct);
@@ -89,7 +92,7 @@ export class ProductsService {
     return product;
   }
 
-  async update(id: string, updateProductDto: UpdateProductDto) {
+  async update(id: string, updateProductDto: UpdateProductDto, user: User) {
     const { images, ...productData } = updateProductDto;
 
     const updatedProduct = await this.productsRepository.preload({
@@ -121,6 +124,7 @@ export class ProductsService {
         );
       }
 
+      updatedProduct.user = user;
       await queryRunner.manager.save(updatedProduct);
 
       await queryRunner.commitTransaction();
