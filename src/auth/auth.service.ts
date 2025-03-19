@@ -64,7 +64,13 @@ export class AuthService {
 
     return {
       ...user,
-      password: undefined,
+      token: this.getJwtToken({ id: user.id }),
+    };
+  }
+
+  checkAuthStatus(user: User) {
+    return {
+      ...user,
       token: this.getJwtToken({ id: user.id }),
     };
   }
