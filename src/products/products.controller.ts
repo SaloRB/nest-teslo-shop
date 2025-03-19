@@ -9,6 +9,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { ApiResponse } from '@nestjs/swagger';
 
 import { Auth, GetUser } from 'src/auth/decorators';
 import { User } from 'src/auth/entities/user.entity';
@@ -18,6 +19,8 @@ import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 
+import { Product } from './entities';
+
 import { ProductsService } from './products.service';
 
 @Controller('products')
@@ -26,6 +29,9 @@ export class ProductsController {
 
   @Post()
   @Auth()
+  @ApiResponse({ status: 201, description: 'Product created', type: Product })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
   create(@Body() createProductDto: CreateProductDto, @GetUser() user: User) {
     return this.productsService.create(createProductDto, user);
   }
