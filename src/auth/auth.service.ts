@@ -14,7 +14,7 @@ import { CreateUserDto, LoginUserDto } from './dto';
 
 import { User } from './entities/user.entity';
 
-import { JwtPayload } from './interfaces/jwt-payload.interface';
+import { JwtPayload } from './interfaces';
 
 @Injectable()
 export class AuthService {
@@ -62,7 +62,11 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    return { ...user, token: this.getJwtToken({ id: user.id }) };
+    return {
+      ...user,
+      password: undefined,
+      token: this.getJwtToken({ id: user.id }),
+    };
   }
 
   private getJwtToken(payload: JwtPayload) {
