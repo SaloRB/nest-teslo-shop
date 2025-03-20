@@ -32,7 +32,6 @@ export class ProductsService {
   ) {}
 
   async create(createProductDto: CreateProductDto, user: User) {
-    console.log({ user });
     try {
       const { images = [], ...productDetails } = createProductDto;
 
